@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faCheck, faEnvelope, faPhone, faMapMarkerAlt, faHome, faCalendar, faLock, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-import './AccountManagement.css';
+import { faUser, faEnvelope, faPhone, faMapMarkerAlt, faLock, faUserTag, faHome, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 const AccountForm = ({ account, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -21,10 +20,7 @@ const AccountForm = ({ account, onClose, onSubmit }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
@@ -34,28 +30,36 @@ const AccountForm = ({ account, onClose, onSubmit }) => {
   };
 
   return (
-    <div className="account-form-modal">
-      <div className="account-form">
+    <div className="account-form">
+      <div className="form-header">
         <h2>{account ? 'Edit Account' : 'Add New Account'}</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="fullName">Full Name:</label>
-            <div className="input-with-icon">
-              <input
-                type="text"
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-                placeholder="Enter full name"
-              />
-              <FontAwesomeIcon icon={faTimes} />
-            </div>
+        <button
+          type="button"
+          className="close-btn"
+          onClick={onClose}
+        >
+          <i className="fas fa-times"></i>
+        </button>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="fullName">Full Name *</label>
+          <div className="input-with-icon">
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              required
+              placeholder="Enter full name"
+            />
+            <FontAwesomeIcon icon={faUser} />
           </div>
-
-          <div className="form-group">
-            <label htmlFor="type">Account Type:</label>
+        </div>
+        <div className="form-group">
+          <label htmlFor="type">Account Type *</label>
+          <div className="input-with-icon">
             <select
               id="type"
               name="type"
@@ -64,62 +68,59 @@ const AccountForm = ({ account, onClose, onSubmit }) => {
               required
               className="input-with-icon"
             >
-              <option value="client">Client</option>
-              <option value="owner">Property Owner</option>
-              <option value="seller">Seller</option>
+              <option value="client">Individual</option>
+              <option value="company">Company</option>
             </select>
+            <FontAwesomeIcon icon={faUserTag} />
           </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email:</label>
-            <div className="input-with-icon">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                placeholder="Enter email address"
-              />
-              <FontAwesomeIcon icon={faEnvelope} />
-            </div>
+        </div>
+        <div className="form-group">
+          <label htmlFor="email">Email *</label>
+          <div className="input-with-icon">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="Enter email address"
+            />
+            <FontAwesomeIcon icon={faEnvelope} />
           </div>
-
-          <div className="form-group">
-            <label htmlFor="phone">Phone:</label>
-            <div className="input-with-icon">
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-                placeholder="Enter phone number"
-              />
-              <FontAwesomeIcon icon={faPhone} />
-            </div>
+        </div>
+        <div className="form-group">
+          <label htmlFor="phone">Phone *</label>
+          <div className="input-with-icon">
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              placeholder="Enter phone number"
+            />
+            <FontAwesomeIcon icon={faPhone} />
           </div>
-
-          <div className="form-group">
-            <label htmlFor="address">Address:</label>
-            <div className="input-with-icon">
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                required
-                placeholder="Enter address"
-              />
-              <FontAwesomeIcon icon={faMapMarkerAlt} />
-            </div>
+        </div>
+        <div className="form-group">
+          <label htmlFor="address">Address</label>
+          <div className="input-with-icon">
+            <input
+              type="text"
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              placeholder="Enter address"
+            />
+            <FontAwesomeIcon icon={faMapMarkerAlt} />
           </div>
-
-          <div className="form-group">
-            <label htmlFor="status">Status:</label>
+        </div>
+        <div className="form-group">
+          <label htmlFor="status">Status *</label>
+          <div className="input-with-icon">
             <select
               id="status"
               name="status"
@@ -131,108 +132,75 @@ const AccountForm = ({ account, onClose, onSubmit }) => {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+            <FontAwesomeIcon icon={faLock} />
           </div>
-
-          {/* Additional Fields */}
-          <div className="form-group">
-            <label htmlFor="password">Password:</label>
-            <div className="input-with-icon">
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="Enter password"
-              />
-              <FontAwesomeIcon icon={faLock} />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password:</label>
-            <div className="input-with-icon">
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                placeholder="Confirm password"
-              />
-              <FontAwesomeIcon icon={faCheck} />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="dateOfBirth">Date of Birth:</label>
-            <div className="input-with-icon">
-              <input
-                type="date"
-                id="dateOfBirth"
-                name="dateOfBirth"
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-                required
-              />
-              <FontAwesomeIcon icon={faCalendar} />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="identificationType">ID Type:</label>
-            <select
-              id="identificationType"
-              name="identificationType"
-              value={formData.identificationType}
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">Password *</label>
+          <div className="input-with-icon">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
               onChange={handleChange}
               required
-              className="input-with-icon"
-            >
-              <option value="id_card">ID Card</option>
-              <option value="passport">Passport</option>
-              <option value="drivers_license">Driver's License</option>
-            </select>
+              placeholder="Enter password"
+            />
+            <FontAwesomeIcon icon={faLock} />
           </div>
+        </div>
+        <div className="form-group">
+          <label htmlFor="identificationType">ID Type:</label>
+          <select
+            id="identificationType"
+            name="identificationType"
+            value={formData.identificationType}
+            onChange={handleChange}
+            required
+            className="input-with-icon"
+          >
+            <option value="id_card">ID Card</option>
+            <option value="passport">Passport</option>
+            <option value="drivers_license">Driver's License</option>
+          </select>
+        </div>
 
-          <div className="form-group">
-            <label htmlFor="identificationNumber">ID Number:</label>
-            <div className="input-with-icon">
-              <input
-                type="text"
-                id="identificationNumber"
-                name="identificationNumber"
-                value={formData.identificationNumber}
-                onChange={handleChange}
-                required
-                placeholder="Enter ID number"
-              />
-              <FontAwesomeIcon icon={faHome} />
-            </div>
+        <div className="form-group">
+          <label htmlFor="identificationNumber">ID Number:</label>
+          <div className="input-with-icon">
+            <input
+              type="text"
+              id="identificationNumber"
+              name="identificationNumber"
+              value={formData.identificationNumber}
+              onChange={handleChange}
+              required
+              placeholder="Enter ID number"
+            />
+            <FontAwesomeIcon icon={faHome} />
           </div>
+        </div>
 
-          <div className="form-actions">
-            <div className="form-note">
-              <FontAwesomeIcon icon={faInfoCircle} /> Required fields are marked with *
-            </div>
-            <button
-              type="button"
-              className="action-btn cancel-btn"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="action-btn submit-btn"
-            >
-              {account ? 'Update' : 'Add'} Account
-            </button>
+        <div className="form-actions">
+          <div className="form-note">
+            <FontAwesomeIcon icon={faInfoCircle} /> Required fields are marked with *
           </div>
-        </form>
-      </div>
+          <button
+            type="button"
+            className="action-btn cancel-btn"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="action-btn submit-btn"
+          >
+            {account ? 'Update' : 'Add'} Account
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
