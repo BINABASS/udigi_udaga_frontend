@@ -1,0 +1,140 @@
+.contact-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.contact-content {
+  max-width: 1200px;
+  width: 100%;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 3rem;
+}
+
+.contact-content h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 3rem;
+}
+
+.contact-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.section {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.section:hover {
+  transform: translateY(-5px);
+}
+
+.section-icon {
+  font-size: 2.5rem;
+  color: #007bff;
+  background: white;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.section-content h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.section-content p {
+  margin: 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.contact-actions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.admin-login-btn,
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.admin-login-btn {
+  background: #007bff;
+}
+
+.admin-login-btn:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+}
+
+.back-btn {
+  background: #6c757d;
+}
+
+.back-btn:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+.admin-login-btn i,
+.back-btn i {
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .contact-content {
+    padding: 1.5rem;
+  }
+
+  .contact-content h1 {
+    font-size: 2rem;
+  }
+
+  .section {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .section-icon {
+    margin-bottom: 1rem;
+  }
+
+  .contact-actions {
+    flex-direction: column;
+  }
+}

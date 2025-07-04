@@ -1,0 +1,5 @@
+# Ignore all node_modules
+node_modules/
+
+# Or if you want to keep node_modules but ignore cache
+node_modules/.cache/
