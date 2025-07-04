@@ -8,6 +8,7 @@ import Properties from './components/properties/Properties';
 import Layout from './components/layout/Layout';
 import Booking from './components/booking/Booking';
 import Contact from './components/Contact';
+import Clients from './components/clients/Clients';
 import './App.css';
 
 // Configure React Router v7 future flags
@@ -26,6 +27,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/clients" element={<Navigate to="/dashboard/clients" replace />} />
         <Route path="/dashboard" element={
           <Layout>
             <Routes>
@@ -34,6 +36,8 @@ function App() {
               <Route path="booking/:id" element={<Booking />} />
               <Route path="booking" element={<Booking />} />
               <Route path="bookings" element={<Navigate to="/dashboard/booking" replace />} />
+              <Route path="clients" element={<Clients />} />
+              <Route path="clients/:id" element={<Clients />} />
             </Routes>
           </Layout>
         } />
@@ -45,6 +49,8 @@ function App() {
               <Route path="booking/:id" element={<Booking />} />
               <Route path="booking" element={<Booking />} />
               <Route path="bookings" element={<Navigate to="/dashboard/booking" replace />} />
+              <Route path="clients" element={<Clients />} />
+              <Route path="clients/:id" element={<Clients />} />
             </Routes>
           </Layout>
         } />

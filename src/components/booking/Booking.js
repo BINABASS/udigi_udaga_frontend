@@ -21,56 +21,19 @@ const Booking = () => {
   const [selectedStatus, setSelectedStatus] = useState(BOOKING_STATUSES.ALL);
 
   useEffect(() => {
-    // Mock data for testing
-    const mockProperties = [
-      {
-        id: 1,
-        title: 'Luxury Villa',
-        type: 'Villa',
-        location: 'Downtown',
-        bedrooms: 4,
-        bathrooms: 3,
-        area: 2500,
-        price: 5000,
-        bookingDate: '2025-07-10',
-        clientName: 'John Doe',
-        duration: 6,
-        image: 'https://via.placeholder.com/400x300',
-        status: 'Booked'
-      },
-      {
-        id: 2,
-        title: 'Modern Apartment',
-        type: 'Apartment',
-        location: 'Beachside',
-        bedrooms: 2,
-        bathrooms: 2,
-        area: 1200,
-        price: 2500,
-        bookingDate: '2025-07-15',
-        clientName: 'Jane Smith',
-        duration: 3,
-        image: 'https://via.placeholder.com/400x300',
-        status: 'Booked'
-      },
-      {
-        id: 3,
-        title: 'Family House',
-        type: 'House',
-        location: 'Suburbs',
-        bedrooms: 5,
-        bathrooms: 4,
-        area: 3000,
-        price: 6500,
-        bookingDate: '2025-06-20',
-        clientName: 'Robert Johnson',
-        duration: 12,
-        image: 'https://via.placeholder.com/400x300',
-        status: 'Booked'
-      }
-    ];
+    // Load properties from localStorage
+    const savedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+    
+    // Add booking-specific fields to properties
+    const propertiesWithBookings = savedProperties.map(property => ({
+      ...property,
+      bookingDate: property.bookingDate || new Date().toISOString().split('T')[0],
+      clientName: property.clientName || 'Client Name',
+      duration: property.duration || 12,
+      status: property.status || 'Booked'
+    }));
 
-    setProperties(mockProperties);
+    setProperties(propertiesWithBookings);
     setIsLoading(false);
   }, []);
 
@@ -196,37 +159,43 @@ const Booking = () => {
     <>
       <div className="booking-page">
         <div className="booking-header">
-          <h1>Bookings</h1>
-          <div className="filters-container">
-            {Object.entries(BOOKING_STATUSES).map(([key, value]) => (
-              <button
-                key={key}
-                className={`filter-button ${selectedStatus === value ? 'active' : ''}`}
-                onClick={() => setSelectedStatus(value)}
-              >
-                {key}
-              </button>
+          <div className="header-content">
+            <h1>Bookings</h1>
+            <div className="header-actions">
+              <div className="status-filters">
+                <h2>Filter by Status:</h2>
+                <div className="filters-container">
+                  {Object.entries(BOOKING_STATUSES).map(([key, value]) => (
+                    <button
+                      key={key}
+                      className={`filter-button ${selectedStatus === value ? 'active' : ''}`}
+                      onClick={() => setSelectedStatus(value)}
+                      data-status={key}
+                    >
+                      {key}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="search-container">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search by title, location, or client name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="booking-statistics">
+            {Object.entries(statistics).map(([key, value]) => (
+              <div key={key} className="stat-card">
+                <div className="stat-value">{value}</div>
+                <div className="stat-label">{key}</div>
+              </div>
             ))}
           </div>
-        </div>
-
-        <div className="booking-statistics">
-          {Object.entries(statistics).map(([key, value]) => (
-            <div key={key} className="stat-card">
-              <div className="stat-value">{value}</div>
-              <div className="stat-label">{key}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="search-container">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search by title, location, or client name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
         </div>
 
         {isLoading ? (
