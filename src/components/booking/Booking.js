@@ -74,6 +74,26 @@ const Booking = () => {
     setIsLoading(false);
   }, []);
 
+  // Calculate statistics
+  const statistics = useMemo(() => {
+    const today = new Date();
+    return {
+      total: properties.length,
+      upcoming: properties.filter(p => new Date(p.bookingDate) > today).length,
+      completed: properties.filter(p => {
+        const endDate = new Date(p.bookingDate);
+        endDate.setMonth(endDate.getMonth() + p.duration);
+        return endDate < today;
+      }).length,
+      overdue: properties.filter(p => {
+        const bookingDate = new Date(p.bookingDate);
+        const endDate = new Date(bookingDate);
+        endDate.setMonth(endDate.getMonth() + p.duration);
+        return bookingDate < today && endDate > today;
+      }).length
+    };
+  }, [properties]);
+
   // Filter properties based on selected status and date range
   const filteredProperties = useMemo(() => {
     let filtered = [...properties];
@@ -102,7 +122,7 @@ const Booking = () => {
     // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(property => 
+      filtered = filtered.filter(property =>
         property.title.toLowerCase().includes(query) ||
         property.location.toLowerCase().includes(query) ||
         property.clientName.toLowerCase().includes(query)
@@ -111,6 +131,29 @@ const Booking = () => {
 
     return filtered;
   }, [properties, selectedStatus, searchQuery]);
+
+  // Handle booking actions
+  const handleExtendBooking = (propertyId) => {
+    const property = properties.find(p => p.id === propertyId);
+    if (property) {
+      // Update property duration
+      property.duration += 1; // Extend by 1 month
+      setProperties(prev => prev.map(p => 
+        p.id === propertyId ? { ...p, duration: property.duration } : p
+      ));
+    }
+  };
+
+  const handleMarkComplete = (propertyId) => {
+    const property = properties.find(p => p.id === propertyId);
+    if (property) {
+      // Update property status
+      property.status = 'Completed';
+      setProperties(prev => prev.map(p => 
+        p.id === propertyId ? { ...p, status: 'Completed' } : p
+      ));
+    }
+  };
 
   // Sort properties by booking date (newest first)
   const sortedProperties = useMemo(() => {
@@ -130,28 +173,14 @@ const Booking = () => {
       case 'delete':
         if (window.confirm(`Are you sure you want to delete ${property.title}?`)) {
           const updatedProperties = properties.filter(p => p.id !== property.id);
-          localStorage.setItem('properties', JSON.stringify(updatedProperties));
           setProperties(updatedProperties);
         }
         break;
       case 'mark-complete':
-        const updatedProperty = {
-          ...property,
-          status: 'Completed',
-          completedDate: new Date().toISOString()
-        };
-        const updatedProperties = properties.map(p => 
-          p.id === property.id ? updatedProperty : p
-        );
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
-        setProperties(updatedProperties);
+        handleMarkComplete(property.id);
         break;
       case 'extend':
-        setShowForm(true);
-        setEditingProperty({
-          ...property,
-          action: 'extend'
-        });
+        handleExtendBooking(property.id);
         break;
       default:
         break;
@@ -164,203 +193,145 @@ const Booking = () => {
   };
 
   return (
-    <div className="booking-page">
-      {isLoading ? (
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading bookings...</p>
-        </div>
-      ) : filteredProperties.length === 0 ? (
-        <div className="empty-state">
-          <i className="fas fa-box-open"></i>
-          <h2>No Bookings Found</h2>
-          <p>Start by adding some booked properties.</p>
-        </div>
-      ) : (
-        <>
-          <div className="booking-header">
-            <div className="header-actions">
-              <div className="header-stats">
-                <div className="stat-item">
-                  <i className="fas fa-clock"></i>
-                  <div>
-                    <span className="stat-value">{properties.length}</span>
-                    <span className="stat-label">Total Bookings</span>
-                  </div>
-                </div>
-                <div className="stat-item">
-                  <i className="fas fa-calendar-check"></i>
-                  <div>
-                    <span className="stat-value">{properties.filter(p => new Date(p.bookingDate) > new Date()).length}</span>
-                    <span className="stat-label">Upcoming Bookings</span>
-                  </div>
-                </div>
-                <div className="stat-item">
-                  <i className="fas fa-calendar-times"></i>
-                  <div>
-                    <span className="stat-value">{properties.filter(p => {
-                      const endDate = new Date(new Date(p.bookingDate).setMonth(
-                        new Date(p.bookingDate).getMonth() + p.duration
-                      ));
-                      return endDate < new Date();
-                    }).length}</span>
-                    <span className="stat-label">Completed Bookings</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="booking-filters">
-              <div className="filter-group">
-                <label>Status</label>
-                <select 
-                  className="type-filter" 
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                >
-                  <option value={BOOKING_STATUSES.ALL}>All Bookings</option>
-                  <option value={BOOKING_STATUSES.UPCOMING}>Upcoming</option>
-                  <option value={BOOKING_STATUSES.COMPLETED}>Completed</option>
-                  <option value={BOOKING_STATUSES.OVERDUE}>Overdue</option>
-                </select>
-              </div>
-              <div className="filter-group">
-                <label>Search</label>
-                <div className="search-container">
-                  <i className="fas fa-search"></i>
-                  <input 
-                    type="text" 
-                    placeholder="Search properties..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+    <>
+      <div className="booking-page">
+        <div className="booking-header">
+          <h1>Bookings</h1>
+          <div className="filters-container">
+            {Object.entries(BOOKING_STATUSES).map(([key, value]) => (
+              <button
+                key={key}
+                className={`filter-button ${selectedStatus === value ? 'active' : ''}`}
+                onClick={() => setSelectedStatus(value)}
+              >
+                {key}
+              </button>
+            ))}
           </div>
-          <div className="booking-grid">
-            {sortedProperties.map((property) => {
-              const bookingDate = new Date(property.bookingDate);
-              const endDate = new Date(bookingDate);
-              endDate.setMonth(endDate.getMonth() + property.duration);
-              const isOverdue = bookingDate < new Date() && endDate > new Date();
-              const isCompleted = endDate < new Date();
-              
-              return (
-                <div 
-                  key={property.id} 
-                  className={`booking-card ${isOverdue ? 'overdue' : isCompleted ? 'completed' : ''}`}
-                >
+        </div>
+
+        <div className="booking-statistics">
+          {Object.entries(statistics).map(([key, value]) => (
+            <div key={key} className="stat-card">
+              <div className="stat-value">{value}</div>
+              <div className="stat-label">{key}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="search-container">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by title, location, or client name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        {isLoading ? (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading bookings...</p>
+          </div>
+        ) : sortedProperties.length === 0 ? (
+          <div className="empty-state">
+            <p>No bookings found</p>
+          </div>
+        ) : (
+          <div className="bookings-grid">
+            {sortedProperties.map((property) => (
+              <div key={property.id} className="booking-card">
+                <div className="booking-content">
                   <div className="booking-image">
                     <img src={property.image} alt={property.title} />
-                    <div className="booking-overlay">
-                      <div className="overlay-content">
-                        <h3>{property.title}</h3>
-                        <p className="overlay-price">${property.price.toLocaleString()}</p>
-                        <button className="quick-view-btn" onClick={() => handleViewDetails(property)}>
-                          <i className="fas fa-search"></i> Quick View
-                        </button>
-                      </div>
-                    </div>
                   </div>
-                  <div className="booking-info">
-                    <div className="property-meta">
-                      <span className="property-type">{property.type}</span>
-                      <span className="property-location">{property.location}</span>
-                    </div>
-                    <div className="booking-details">
-                      <div className="detail-item">
-                        <i className="fas fa-bed"></i>
-                        <span>{property.bedrooms} Beds</span>
-                      </div>
-                      <div className="detail-item">
-                        <i className="fas fa-bath"></i>
-                        <span>{property.bathrooms} Baths</span>
-                      </div>
-                      <div className="detail-item">
-                        <i className="fas fa-ruler-combined"></i>
-                        <span>{property.area} sqft</span>
+                  <div className="booking-details">
+                    <h2 className="booking-title">{property.title}</h2>
+                    <div className="booking-info">
+                      <div className="booking-info-item">
+                        <i className="fas fa-map-marker-alt"></i>
+                        {property.location}
                       </div>
                       <div className="booking-info-item">
                         <i className="fas fa-calendar"></i>
-                        <span>Booked: {bookingDate.toLocaleDateString()}</span>
+                        {property.bookingDate}
                       </div>
                       <div className="booking-info-item">
                         <i className="fas fa-user"></i>
-                        <span>Client: {property.clientName}</span>
+                        {property.clientName}
                       </div>
                       <div className="booking-info-item">
                         <i className="fas fa-clock"></i>
-                        <span>Duration: {property.duration} months</span>
+                        {property.duration} months
                       </div>
-                      <div className="booking-info-item">
-                        <i className="fas fa-calendar-alt"></i>
-                        <span>End Date: {endDate.toLocaleDateString()}</span>
-                      </div>
-                      {isOverdue && (
-                        <div className="booking-info-item overdue-notice">
-                          <i className="fas fa-exclamation-triangle"></i>
-                          <span>Overdue Booking</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="property-price">
-                      <span className="price-label">Price:</span>
-                      <span className="price-value">${property.price.toLocaleString()}</span>
                     </div>
                     <div className="booking-actions">
-                      <button className="action-btn view-btn" onClick={() => handleViewDetails(property)}>
-                        <i className="fas fa-eye"></i> View Details
+                      <button
+                        className="action-button view-button"
+                        onClick={() => handleViewDetails(property)}
+                      >
+                        <i className="fas fa-eye"></i>
+                        View
                       </button>
-                      <button className="action-btn edit-btn" onClick={() => handlePropertyAction(property, 'edit')}>
-                        <i className="fas fa-edit"></i> Edit
+                      <button
+                        className="action-button edit-button"
+                        onClick={() => handlePropertyAction(property, 'edit')}
+                      >
+                        <i className="fas fa-edit"></i>
+                        Edit
                       </button>
-                      {!isCompleted && (
-                        <button 
-                          className="action-btn extend-btn" 
-                          onClick={() => handlePropertyAction(property, 'extend')}
-                        >
-                          <i className="fas fa-clock"></i> Extend
-                        </button>
-                      )}
-                      <button className="action-btn delete-btn" onClick={() => handlePropertyAction(property, 'delete')}>
-                        <i className="fas fa-trash"></i> Delete
+                      <button
+                        className="action-button delete-button"
+                        onClick={() => handlePropertyAction(property, 'delete')}
+                      >
+                        <i className="fas fa-trash"></i>
+                        Delete
                       </button>
-                      {isOverdue && (
-                        <button 
-                          className="action-btn complete-btn" 
-                          onClick={() => handlePropertyAction(property, 'mark-complete')}
-                        >
-                          <i className="fas fa-check"></i> Mark Complete
-                        </button>
-                      )}
+                      <button
+                        className="action-button extend-button"
+                        onClick={() => handlePropertyAction(property, 'extend')}
+                      >
+                        <i className="fas fa-clock"></i>
+                        Extend
+                      </button>
+                      <button
+                        className="action-button mark-complete-button"
+                        onClick={() => handlePropertyAction(property, 'mark-complete')}
+                      >
+                        <i className="fas fa-check"></i>
+                        Mark Complete
+                      </button>
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
-          {showForm && (
-            <PropertyForm
-              property={editingProperty}
-              onClose={() => {
-                setShowForm(false);
-                setEditingProperty(null);
-              }}
-              onSubmit={handlePropertyAction}
-            />
-          )}
-          {showDetails && selectedProperty && (
-            <PropertyDetails
-              property={selectedProperty}
-              onClose={() => {
-                setShowDetails(false);
-                setSelectedProperty(null);
-              }}
-            />
-          )}
-        </>
+        )}
+      </div>
+
+      {showForm && (
+        <PropertyForm
+          property={editingProperty}
+          onClose={() => {
+            setShowForm(false);
+            setEditingProperty(null);
+          }}
+          onSubmit={handlePropertyAction}
+        />
       )}
-    </div>
+
+      {showDetails && selectedProperty && (
+        <PropertyDetails
+          property={selectedProperty}
+          onClose={() => {
+            setShowDetails(false);
+            setSelectedProperty(null);
+          }}
+        />
+      )}
+    </>
   );
 };
 
