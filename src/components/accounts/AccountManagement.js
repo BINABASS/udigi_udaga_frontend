@@ -1,9 +1,18 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import AccountForm from '../accounts/AccountForm';
-import AccountDetails from '../accounts/AccountDetails';
-import './Clients.css';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEdit, faTrash, faToggleOn, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
+import AccountForm from './AccountForm';
+import AccountDetails from './AccountDetails';
+import './AccountManagement.css';
 
-const Clients = () => {
+const ACCOUNT_TYPES = {
+  ALL: 'all',
+  CLIENT: 'client',
+  OWNER: 'owner',
+  SELLER: 'seller'
+};
+
+const AccountManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
@@ -11,53 +20,18 @@ const Clients = () => {
   const [accounts, setAccounts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-
-  useEffect(() => {
-    // Load clients from localStorage
-    const savedClients = JSON.parse(localStorage.getItem('clients')) || [
-      {
-        id: 1,
-        name: 'John Smith',
-        type: 'individual',
-        email: 'john@example.com',
-        phone: '+1234567890',
-        address: '123 Main St, City, Country',
-        company: null,
-        totalBookings: 3,
-        totalSpent: 15000,
-        status: 'active',
-        avatar: 'https://via.placeholder.com/150'
-      },
-      {
-        id: 2,
-        name: 'Tech Solutions Inc.',
-        type: 'company',
-        email: 'info@techsolutions.com',
-        phone: '+0987654321',
-        address: '456 Business Ave, City, Country',
-        company: 'Tech Solutions Inc.',
-        totalBookings: 8,
-        totalSpent: 45000,
-        status: 'active',
-        avatar: 'https://via.placeholder.com/150'
-      }
-    ];
-
-    setAccounts(savedClients);
-    setIsLoading(false);
-  }, []);
+  const [selectedType, setSelectedType] = useState(ACCOUNT_TYPES.ALL);
 
   useEffect(() => {
     // Load accounts from localStorage
     const savedAccounts = JSON.parse(localStorage.getItem('accounts')) || [
       {
         id: 1,
-        fullName: 'John Smith',
         type: 'client',
+        fullName: 'John Smith',
         email: 'john@example.com',
         phone: '+1234567890',
-        address: '',
+        address: '123 Main St, City, Country',
         status: 'active',
         properties: [],
         createdAt: new Date().toISOString(),
@@ -65,13 +39,25 @@ const Clients = () => {
       },
       {
         id: 2,
-        fullName: 'Tech Solutions Inc.',
-        type: 'company',
-        email: 'info@techsolutions.com',
+        type: 'owner',
+        fullName: 'Sarah Johnson',
+        email: 'sarah@example.com',
         phone: '+0987654321',
-        address: '',
+        address: '456 Business Ave, City, Country',
         status: 'active',
-        properties: [],
+        properties: ['property1', 'property2'],
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      },
+      {
+        id: 3,
+        type: 'seller',
+        fullName: 'Mike Brown',
+        email: 'mike@example.com',
+        phone: '+1122334455',
+        address: '789 Market St, City, Country',
+        status: 'inactive',
+        properties: ['property3'],
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString()
       }
@@ -83,26 +69,22 @@ const Clients = () => {
 
   // Calculate statistics
   const statistics = useMemo(() => {
-    const filteredAccounts = accounts.filter(account => 
-      account.type === 'client' || account.type === 'company'
-    );
     return {
-      total: filteredAccounts.length,
-      active: filteredAccounts.filter(a => a.status === 'active').length,
-      inactive: filteredAccounts.filter(a => a.status === 'inactive').length,
-      individual: filteredAccounts.filter(a => a.type === 'client').length,
-      company: filteredAccounts.filter(a => a.type === 'company').length
+      total: accounts.length,
+      active: accounts.filter(a => a.status === 'active').length,
+      inactive: accounts.filter(a => a.status === 'inactive').length,
+      clients: accounts.filter(a => a.type === 'client').length,
+      owners: accounts.filter(a => a.type === 'owner').length,
+      sellers: accounts.filter(a => a.type === 'seller').length
     };
   }, [accounts]);
 
   // Filter accounts based on selected type and search
   const filteredAccounts = useMemo(() => {
-    let filtered = accounts.filter(account => 
-      account.type === 'client' || account.type === 'company'
-    );
+    let filtered = [...accounts];
     
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(account => account.type === (selectedType === 'individual' ? 'client' : 'company'));
+    if (selectedType !== ACCOUNT_TYPES.ALL) {
+      filtered = filtered.filter(account => account.type === selectedType);
     }
 
     if (searchQuery) {
@@ -110,7 +92,7 @@ const Clients = () => {
       filtered = filtered.filter(account => 
         account.fullName.toLowerCase().includes(query) ||
         account.email.toLowerCase().includes(query) ||
-        account.fullName.toLowerCase().includes(query)
+        account.phone.includes(query)
       );
     }
 
@@ -124,7 +106,8 @@ const Clients = () => {
         ...formData,
         id: Date.now(),
         createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
+        lastLogin: new Date().toISOString(),
+        properties: []
       };
       setAccounts([...accounts, newAccount]);
       localStorage.setItem('accounts', JSON.stringify([...accounts, newAccount]));
@@ -167,38 +150,30 @@ const Clients = () => {
   };
 
   return (
-    <div className="clients-page">
-      <div className="clients-header">
-        <h1>Accounts</h1>
+    <div className="accounts-page">
+      <div className="accounts-header">
+        <h1>Account Management</h1>
         <div className="header-actions">
           <div className="type-filters">
             <h2>Filter by Type:</h2>
             <div className="filters-container">
-              <button
-                className={`filter-button ${selectedType === 'all' ? 'active' : ''}`}
-                onClick={() => setSelectedType('all')}
-              >
-                ALL
-              </button>
-              <button
-                className={`filter-button ${selectedType === 'individual' ? 'active' : ''}`}
-                onClick={() => setSelectedType('individual')}
-              >
-                INDIVIDUAL
-              </button>
-              <button
-                className={`filter-button ${selectedType === 'company' ? 'active' : ''}`}
-                onClick={() => setSelectedType('company')}
-              >
-                COMPANY
-              </button>
+              {Object.entries(ACCOUNT_TYPES).map(([key, value]) => (
+                <button
+                  key={key}
+                  className={`filter-button ${selectedType === value ? 'active' : ''}`}
+                  onClick={() => setSelectedType(value)}
+                  data-status={key}
+                >
+                  {key}
+                </button>
+              ))}
             </div>
           </div>
           <div className="search-container">
             <input
               type="text"
               className="search-input"
-              placeholder="Search by name, email, or company..."
+              placeholder="Search by name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -206,7 +181,7 @@ const Clients = () => {
         </div>
       </div>
 
-      <div className="clients-statistics">
+      <div className="accounts-statistics">
         {Object.entries(statistics).map(([key, value]) => (
           <div key={key} className="stat-card">
             <div className="stat-value">{value}</div>
@@ -227,18 +202,19 @@ const Clients = () => {
             className="action-btn add-btn"
             onClick={() => setShowForm(true)}
           >
-            <i className="fas fa-plus"></i> Add New Account
+            <FontAwesomeIcon icon={faPlus} /> Add New Account
           </button>
         </div>
       ) : (
-        <div className="clients-grid">
+        <div className="accounts-grid">
           {filteredAccounts.map((account) => (
             <div key={account.id} className="account-card">
               <div className="account-header">
                 <div className="account-info">
                   <h3>{account.fullName}</h3>
                   <span className="account-type-badge">
-                    {account.type === 'client' ? 'Individual' : 'Company'}
+                    {account.type === 'client' ? 'Client' : 
+                     account.type === 'owner' ? 'Property Owner' : 'Seller'}
                   </span>
                 </div>
                 <div className="account-status">
@@ -262,31 +238,35 @@ const Clients = () => {
                   <i className="fas fa-map-marker-alt"></i>
                   {account.address}
                 </div>
+                <div className="detail-item">
+                  <FontAwesomeIcon icon={faTimes} />
+                  {account.properties.length} Properties
+                </div>
               </div>
               <div className="account-actions">
                 <button
                   className="action-btn view-btn"
                   onClick={() => handleViewDetails(account)}
                 >
-                  <i className="fas fa-eye"></i> View
+                  <FontAwesomeIcon icon={faEye} /> View
                 </button>
                 <button
                   className="action-btn edit-btn"
                   onClick={() => handleEditAccount(account)}
                 >
-                  <i className="fas fa-edit"></i> Edit
+                  <FontAwesomeIcon icon={faEdit} /> Edit
                 </button>
                 <button
                   className="action-btn delete-btn"
                   onClick={() => handleDeleteAccount(account.id)}
                 >
-                  <i className="fas fa-trash"></i> Delete
+                  <FontAwesomeIcon icon={faTrash} /> Delete
                 </button>
                 <button
                   className="action-btn status-btn"
                   onClick={() => handleToggleStatus(account.id)}
                 >
-                  <i className="fas fa-toggle-on"></i> {account.status === 'active' ? 'Deactivate' : 'Activate'}
+                  <FontAwesomeIcon icon={faToggleOn} /> {account.status === 'active' ? 'Deactivate' : 'Activate'}
                 </button>
               </div>
             </div>
@@ -318,4 +298,4 @@ const Clients = () => {
   );
 };
 
-export default Clients;
+export default AccountManagement;
